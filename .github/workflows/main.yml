@@ -43,15 +43,50 @@ jobs:
           notify_when: "failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-
+  sonarcloud:
+    name: SonarCloud
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Send Slack notification
+        uses: ravsamhq/notify-slack-action@v2
+        if: always()
+        with:
+            status: ${{ job.status }}
+            token: ${{ secrets.GITHUB_TOKEN }}
+            notification_title: "{workflow} has {status_message}"
+            message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
+            footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
+            notify_when: "failure"
+        env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}     
   deploy:
     name: Deploy
-    needs: [build] # Our build must pass in order to run the deploy job
+    needs: [sonarcloud] # Our sonarcloud must pass in order to run the deploy job
     runs-on: ubuntu-22.04
-
     steps:
-    - name: Deploy to production
-      uses: johnbeynon/render-deploy-action@v0.0.8
-      with:
-        service-id: ${{ secrets.SERVICE_ID }} 
-        api-key: ${{ secrets.RENDER_API_KEY }} 
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+      - name: Send Slack notification
+        uses: ravsamhq/notify-slack-action@v2
+        if: always()
+        with:
+            status: ${{ job.status }}
+            token: ${{ secrets.GITHUB_TOKEN }}
+            notification_title: "{workflow} has {status_message}"
+            message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
+            footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
+            notify_when: "failure, success"
+        env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
