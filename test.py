@@ -6,7 +6,7 @@ client = TestClient(app)
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message":  "FastAPI is 2 working"}
+    assert response.json() == {"message":  "FastAPI is working"}
 
 
 def test_get_products():
