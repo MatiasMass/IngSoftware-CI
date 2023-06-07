@@ -44,4 +44,14 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-    # deploy:
+  deploy:
+    name: Deploy
+    needs: [build] # Our build must pass in order to run the deploy job
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Deploy to production
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ secrets.SERVICE_ID }} 
+        api-key: ${{ secrets.RENDER_API_KEY }} 
