@@ -5,7 +5,7 @@ router = APIRouter()
 list_of_products = [
     {
         "id": 1,
-        "name": "Product 1",
+        "name": "Product 3",
         "description": "This is the description for product 1",
         "price": 100,
         "image": "https://picsum.photos/200/300"
