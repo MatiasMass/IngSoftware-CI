@@ -49,9 +49,9 @@ def test_get_product():
     }
 
 
-def test_get_user_not_found():
+def test_get_product_not_found():
     response = client.get(
-        f"/api/products/4"
+        "/api/products/4"
     )
     assert response.status_code == 404
     assert response.json() == {
