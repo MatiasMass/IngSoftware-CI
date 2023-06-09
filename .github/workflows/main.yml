@@ -70,15 +70,18 @@ jobs:
             SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}     
   deploy:
     needs: [sonarcloud]
-    name: Deploy to Render
-    runs-on: ubuntu-latest
+    name: Wait for Deploy
+    runs-on: ubuntu-22.04
     steps:
-      - name: Trigger deployment
-        uses: sws2apps/render-deployment@main 
+      - name: Wait for Render Deployment
+        uses: bounceapp/render-action@0.6.0
         with:
-          serviceId: ${{ secrets.SERVICE_ID }}
-          apiKey: ${{ secrets.RENDER_API_KEY }}
-          multipleDeployment: false #optional, default true
+          render-token: ${{ secrets.RENDER_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          service-id: srv-ci0g5s67avjevabiblvg
+          retries: 20
+          wait: 16000
+          sleep: 30000
       - name: Send Slack notification
         uses: ravsamhq/notify-slack-action@v2
         if: always()
