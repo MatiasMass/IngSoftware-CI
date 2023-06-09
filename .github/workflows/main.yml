@@ -69,15 +69,15 @@ jobs:
         env:
             SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}     
   deploy:
-    name: Deploy
-    needs: [sonarcloud] # Our sonarcloud must pass in order to run the deploy job
-    runs-on: ubuntu-22.04
+    name: Deploy to Render
+    runs-on: ubuntu-latest
     steps:
-      - name: Deploy to production
-        uses: johnbeynon/render-deploy-action@v0.0.8
+      - name: Trigger deployment
+        uses: sws2apps/render-deployment@main 
         with:
-          service-id: ${{ secrets.SERVICE_ID }}
-          api-key: ${{ secrets.RENDER_API_KEY }}
+          serviceId: ${{ secrets.SERVICE_ID }}
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          multipleDeployment: false #optional, default true
       - name: Send Slack notification
         uses: ravsamhq/notify-slack-action@v2
         if: always()
