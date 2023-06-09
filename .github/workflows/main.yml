@@ -75,13 +75,15 @@ jobs:
     runs-on: ubuntu-22.04
     if: needs.sonarcloud.result == 'success'
     steps:
-      - name: Deploy to Render
-        uses: JorgeLNJunior/render-deploy@v1.3.2
+      - name: Wait for Render Deployment
+        uses: Bounceapp/render-action@0.6.0
         with:
-          service_id: ${{ secrets.SERVICE_ID }} # required
-          api_key: ${{ secrets.RENDER_API_KEY }} # required
-          clear_cache: false # Clear build cache. Optional
-          wait_deploy: false # Wait until the deploy status is successful. Warning! Free Render services can take +5 minutes to be fully deployed. Optional
+          render-token: ${{ secrets.RENDER_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          service-id: ${{ secrets.SERVICE_ID }}}
+          retries: 20
+          wait: 16000
+          sleep: 30000
       - name: Send Slack notification
         uses: ravsamhq/notify-slack-action@v2
         if: always()
