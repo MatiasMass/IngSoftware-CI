@@ -27,22 +27,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install "fastapi[all]"
           pip install pytest
-
-      - name: Run tests
-        run: pytest test.py
-
-      - name: Send Slack notification
-        uses: ravsamhq/notify-slack-action@v2
-        if: always()
-        with:
-          status: ${{ job.status }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          notification_title: "{workflow} has {status_message}"
-          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
-          footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
-          notify_when: "failure"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+  test:
+    name: test
+    needs: [build]
+    runs-on: ubuntu-22.04
+    if: needs.build.result == 'success'
+    steps:
+    - name: Run tests
+      run: pytest test.py
+    - name: Send Slack notification
+      uses: ravsamhq/notify-slack-action@v2
+      if: always()
+      with:
+        status: ${{ job.status }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        notification_title: "{workflow} has {status_message}"
+        message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
+        footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
+        notify_when: "failure"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
   sonarcloud:
     name: SonarCloud
     needs: [build]
@@ -68,28 +72,24 @@ jobs:
             footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
             notify_when: "failure"
         env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}     
-  deploy:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}   
+  deploy-api:
+    name: Deploy API
     needs: [sonarcloud]
-    name: Wait for Deploy
-    runs-on: ubuntu-22.04
-    if: needs.sonarcloud.result == 'success' && !failure()
+    runs-on: ubuntu-latest
+    if: needs.sonarcloud.result == 'success'
     steps:
-      - name: Wait for Render Deployment
-        uses: Bounceapp/render-action@0.6.0
-        with:
-          render-token: ${{ secrets.RENDER_API_KEY }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          service-id: ${{ secrets.SERVICE_ID }}
-      - name: Send Slack notification
-        uses: ravsamhq/notify-slack-action@v2
-        if: always()
-        with:
-            status: ${{ job.status }}
-            token: ${{ secrets.GITHUB_TOKEN }}
-            notification_title: "{workflow} has {status_message}"
-            message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
-            footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
-            notify_when: "failure, success"
-        env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Run FastAPI
+        run: uvicorn main:app --host 0.0.0.0 --port 8000 --reload   
+  Deploy-Preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
