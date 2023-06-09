@@ -75,15 +75,11 @@ jobs:
     runs-on: ubuntu-22.04
     if: needs.sonarcloud.result == 'success'
     steps:
-      - name: Wait for Render Deployment
-        uses: bounceapp/render-action@0.6.0
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@v0.0.8
         with:
-          render-token: ${{ secrets.RENDER_API_KEY }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          service-id: srv-ci17i5fdvk4kgov2a190
-          retries: 20
-          wait: 16000
-          sleep: 30000
+          service-id: ${{ secrets.SERVICE_ID }} # Can be found as part of the Deploy Hook
+          api-key: ${{ secrets.RENDER_API_KEY }} # Create your API key in Render Dashboard > Account Settings
       - name: Send Slack notification
         uses: ravsamhq/notify-slack-action@v2
         if: always()
