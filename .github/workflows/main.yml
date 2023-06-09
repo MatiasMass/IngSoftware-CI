@@ -69,7 +69,7 @@ jobs:
         env:
             SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}     
   deploy:
-    needs: [sonarcloud]
+    needs: [build, sonarcloud]
     name: Wait for Deploy
     runs-on: ubuntu-22.04
     steps:
