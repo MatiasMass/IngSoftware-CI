@@ -68,30 +68,4 @@ jobs:
             notify_when: "failure"
         env:
             SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}     
-  deploy:
-    needs: [build, sonarcloud]
-    name: Wait for Deploy
-    runs-on: ubuntu-22.04
-    if: success()
-    steps:
-      - name: Wait for Render Deployment
-        uses: bounceapp/render-action@0.6.0
-        with:
-          render-token: ${{ secrets.RENDER_API_KEY }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          service-id: srv-ci0g5s67avjevabiblvg
-          retries: 20
-          wait: 16000
-          sleep: 30000
-      - name: Send Slack notification
-        uses: ravsamhq/notify-slack-action@v2
-        if: always()
-        with:
-            status: ${{ job.status }}
-            token: ${{ secrets.GITHUB_TOKEN }}
-            notification_title: "{workflow} has {status_message}"
-            message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
-            footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
-            notify_when: "failure, success"
-        env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+  
