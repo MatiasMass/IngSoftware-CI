@@ -75,11 +75,13 @@ jobs:
     runs-on: ubuntu-22.04
     if: needs.sonarcloud.result == 'success'
     steps:
-      - name: Deploy to production
-        uses: johnbeynon/render-deploy-action@v0.0.8
+      - name: Deploy to Render
+        uses: JorgeLNJunior/render-deploy@v1.3.2
         with:
-          service-id: ${{ secrets.SERVICE_ID }} # Can be found as part of the Deploy Hook
-          api-key: ${{ secrets.RENDER_API_KEY }} # Create your API key in Render Dashboard > Account Settings
+          service_id: ${{ secrets.SERVICE_ID }} # required
+          api_key: ${{ secrets.RENDER_API_KEY }} # required
+          clear_cache: false # Clear build cache. Optional
+          wait_deploy: false # Wait until the deploy status is successful. Warning! Free Render services can take +5 minutes to be fully deployed. Optional
       - name: Send Slack notification
         uses: ravsamhq/notify-slack-action@v2
         if: always()
