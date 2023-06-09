@@ -69,6 +69,7 @@ jobs:
         env:
             SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}     
   deploy:
+    needs: [sonarcloud]
     name: Deploy to Render
     runs-on: ubuntu-latest
     steps:
