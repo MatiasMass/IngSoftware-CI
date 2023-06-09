@@ -72,7 +72,7 @@ jobs:
     needs: [build, sonarcloud]
     name: Wait for Deploy
     runs-on: ubuntu-22.04
-    if: success()
+    if: ${{ success() }}
     steps:
       - name: Wait for Render Deployment
         uses: bounceapp/render-action@0.6.0
@@ -80,9 +80,6 @@ jobs:
           render-token: ${{ secrets.RENDER_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           service-id: srv-ci17i5fdvk4kgov2a190
-          retries: 20
-          wait: 16000
-          sleep: 30000
       - name: Send Slack notification
         uses: ravsamhq/notify-slack-action@v2
         if: always()
