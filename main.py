@@ -21,4 +21,4 @@ app.include_router(router, tags=["api"], prefix="/api/products")
 
 @app.get("/")
 def root():
-    return {"message": "FastAPI is not working!! Try /api/products"}
+    return {"message": "FastAPI is not working!! Try again"}

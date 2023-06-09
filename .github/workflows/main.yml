@@ -72,7 +72,7 @@ jobs:
     needs: [build, sonarcloud]
     name: Wait for Deploy
     runs-on: ubuntu-22.04
-    if: ${{ needs.build.result != 'failure'}}
+    if: success()
     steps:
       - name: Wait for Render Deployment
         uses: bounceapp/render-action@0.6.0
