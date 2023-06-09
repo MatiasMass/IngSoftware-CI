@@ -26,27 +26,29 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install "fastapi[all]"
-          pip install pytest
   test:
     name: test
     needs: [build]
     runs-on: ubuntu-22.04
     if: needs.build.result == 'success'
     steps:
-    - name: Run tests
-      run: pytest test.py
-    - name: Send Slack notification
-      uses: ravsamhq/notify-slack-action@v2
-      if: always()
-      with:
-        status: ${{ job.status }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        notification_title: "{workflow} has {status_message}"
-        message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
-        footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
-        notify_when: "failure"
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip install pytest
+      - name: Run tests
+        run: pytest test.py
+      - name: Send Slack notification
+        uses: ravsamhq/notify-slack-action@v2
+        if: always()
+        with:
+          status: ${{ job.status }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          notification_title: "{workflow} has {status_message}"
+          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
+          footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
+          notify_when: "failure"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
   sonarcloud:
     name: SonarCloud
     needs: [build]
