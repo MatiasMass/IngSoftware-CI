@@ -73,7 +73,7 @@ jobs:
     needs: [sonarcloud]
     name: Wait for Deploy
     runs-on: ubuntu-22.04
-    if: needs.sonarcloud.result == 'success'
+    if: always()
     steps:
       - name: Wait for Render Deployment
         uses: Bounceapp/render-action@0.6.0
