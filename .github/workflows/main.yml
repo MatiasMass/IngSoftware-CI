@@ -81,9 +81,6 @@ jobs:
           render-token: ${{ secrets.RENDER_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           service-id: ${{ secrets.SERVICE_ID }}
-          retries: 20
-          wait: 16000
-          sleep: 30000
       - name: Send Slack notification
         uses: ravsamhq/notify-slack-action@v2
         if: always()
