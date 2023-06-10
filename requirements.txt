@@ -1,3 +1,5 @@
 fastapi
 pytest
 gunicorn
+uvicorn
+jinja2
